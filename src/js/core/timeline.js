@@ -204,56 +204,45 @@ EXPERIMENT SECTION (*sec_expt)
 */
 
 /* -------- defining factors && exptdesign (*factors) --------*/
+// Note: `config` itself isn't resolved until startExperiment() awaits the WAVE
+// backend (*sec_run below), so this just defines how to build `factors` and
+// creates `full_design` -- it's called from startExperiment() once config is
+// actually available.
+function buildExptDesign(config) {
 
+    // Expt variables that are not able to change (without PR)
+    var poss_position_combos = ["CU","CD","UC","DC","CC","CC","UU","DD"]
+    var poss_position = ["C", "U", "D"];
+    var poss_disp_duration = [300];
 
-var poss_fullness = ["Half"] //has "Full", "Half", "ExtraFull" or both
-poss_fullness = randomChoice(poss_fullness,1);
-var poss_position_combos = ["CU","CD","UC","DC","CC","CC","UU","DD"]
-var poss_position = ["C", "U", "D"];
-var poss_hand = randomChoice(["Fist", "PPR", "Reach"],1);
-var poss_disp_duration = [300];
+    // Expt variables that ARE able to change via config, default set in params.js.
+    //      Config numbers arrive as floats, so make sure to read in correctly asInteger/asNumber
+    //      see the helpers in src/js/utils/standard-functions.js.
+    var poss_fullness = randomChoice(asList(config.base_fullness, CONFIG_DEFAULTS.base_fullness), 1); //has "Full", "Half", "ExtraFull" or both
+    var poss_hand = randomChoice(asList(config.base_hand_style, CONFIG_DEFAULTS.base_hand_style), 1); //reminder to remove the randomChoice() when you're not doing single block version
+    var n_reps = asInteger(config.number_of_repetitions, CONFIG_DEFAULTS.number_of_repetitions);
 
-var factors = { // each of these needs to be an array
-    fullness: poss_fullness,
-    position_combo: poss_position_combos,
-    hand_style: poss_hand,
-    disp_duration: poss_disp_duration
-}
+    var factors = { // each of these needs to be an array
+        fullness: poss_fullness,
+        position_combo: poss_position_combos,
+        hand_style: poss_hand,
+        disp_duration: poss_disp_duration
+    }
 
-var full_design = jsPsych.randomization.factorial(factors, 2); // create combination of every possible condition, and randomly shuffles
-console.log(full_design);
-console.log(full_design[0]);
+    var full_design = jsPsych.randomization.factorial(factors, n_reps); // create combination of every possible condition, and randomly shuffles
 
-/* -------  Set Preload Images for Expt (*preload_expt) -------------- */
-for (var i=0; i < poss_fullness.length; i++) {
-    for (var j=0; j < poss_position.length; j++){
-        for (var k=0; k < poss_hand.length; k++) {
-            forPreload.push(`${currentStimFolder}cup${poss_fullness[i]}_pos${poss_position[j]}_hand${poss_hand[k]}.png`)
+    /* -------  Set Preload Images for Expt (*preload_expt) -------------- */
+    for (var i=0; i < poss_fullness.length; i++) {
+        for (var j=0; j < poss_position.length; j++){
+            for (var k=0; k < poss_hand.length; k++) {
+                forPreload.push(`${currentStimFolder}cup${poss_fullness[i]}_pos${poss_position[j]}_hand${poss_hand[k]}.png`)
+            }
         }
     }
-}
 
-forPreload.push(`${generalFolder}mask.png`)
+    forPreload.push(`${generalFolder}mask.png`)
 
-var thisFirstPosition;
-var thisSecondPosition;
-
-/* ------- timeline expt push (*pushExpt ) -------------- */
-for (var elem = 0; elem < full_design.length; elem++) {
-// for (var elem = 0; elem < 1; elem++) { // for debugging and dev runs
-    thisFirstPosition = full_design[elem].position_combo[0]
-    thisSecondPosition = full_design[elem].position_combo[1]
-
-    runSingleTrial(
-        full_design[elem].fullness,
-        thisFirstPosition,
-        thisSecondPosition,
-        full_design[elem].hand_style,
-        full_design[elem].disp_duration, 
-        elem,
-        timelineexpt,
-        'expt',
-    );
+    return full_design;
 }
 
 /*
@@ -316,17 +305,76 @@ Run Expt (*sec_run)
 ===============================================================
 */
 
-if (runPreload) {
-    var preload = {
-        type: jsPsychPreload,
-        images: forPreload,
+// The experiment can pull a few settings from the WAVE backend (e.g. how many
+// times to repeat the trial design). Because that's a network request, we wait
+// for it here, then build the trials and start. Everything above this point is
+// plain and editable by hand -- only this run step needs to be async.
+async function startExperiment() {
+
+    // Resolve settings: this experiment's backend config merged over the
+    //    defaults in params.js (falls back to the defaults if WAVE is offline).
+    var config = window.waveClient
+        ? await window.waveClient.getConfig()
+        : CONFIG_DEFAULTS;
+
+    // Save the exact settings used onto every data row, for the record.
+    jsPsych.data.addProperties({ experiment_config: JSON.stringify(config) });
+
+    // currentType/currentStimFolder depend on config, so they must be resolved
+    // here -- before buildExptDesign() (which preloads from currentStimFolder)
+    // and before any trials run (trial.js reads both as globals).
+    currentType = randomChoice(asList(config.base_type, CONFIG_DEFAULTS.base_type), 1)[0];
+    currentStimFolder = `${stimFolder}${currentType}/`;
+
+    var full_design = buildExptDesign(config);
+    console.log(full_design);
+
+    var thisFirstPosition;
+    var thisSecondPosition;
+
+    /* ------- timeline expt push (*pushExpt ) -------------- */
+    for (var elem = 0; elem < full_design.length; elem++) {
+    // for (var elem = 0; elem < 1; elem++) { // for debugging and dev runs
+        thisFirstPosition = full_design[elem].position_combo[0]
+        thisSecondPosition = full_design[elem].position_combo[1]
+
+        runSingleTrial(
+            full_design[elem].fullness,
+            thisFirstPosition,
+            thisSecondPosition,
+            full_design[elem].hand_style,
+            full_design[elem].disp_duration,
+            elem,
+            timelineexpt,
+            'expt',
+        );
     }
-    timelinebase = timelinebase.concat(preload);
+
+    // Assemble the timeline (toggle sections with the run* flags in params.js).
+    if (runPreload) {
+        var preload = {
+            type: jsPsychPreload,
+            images: forPreload,
+            auto_preload: true,
+            show_detailed_errors: true,
+            on_error: function(file) {
+                console.log('Error: ', file);
+            },
+            on_success: function(file) {
+                console.log('Success: ', file);
+            },
+            message: 'Please wait while the experiment loads...'
+        }
+        timelinebase = timelinebase.concat(preload);
+    }
+
+    if (runIntro) { timelinebase = timelinebase.concat(timelineintro) }
+    if (runInstr) { timelinebase = timelinebase.concat(timelineinstr) }
+    if (runExpt) { timelinebase = timelinebase.concat(timelineexpt) }
+    if (runClose) { timelinebase = timelinebase.concat(timelineclose) }
+
+    jsPsych.run(timelinebase);
 }
 
-if (runIntro) { timelinebase = timelinebase.concat(timelineintro) }
-if (runInstr) { timelinebase = timelinebase.concat(timelineinstr) }
-if (runExpt) { timelinebase = timelinebase.concat(timelineexpt) }
-if (runClose) { timelinebase = timelinebase.concat(timelineclose) }
-
-jsPsych.run(timelinebase);
+// Start once the page (and the WAVE client module) have loaded.
+window.addEventListener('DOMContentLoaded', startExperiment);
