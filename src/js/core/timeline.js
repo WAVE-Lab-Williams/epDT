@@ -320,7 +320,7 @@ async function startExperiment() {
     // currentType/currentStimFolder depend on config, so they must be resolved
     // here -- before buildExptDesign() (which preloads from currentStimFolder)
     // and before any trials run (trial.js reads both as globals).
-    currentType = [randomChoice(asList(config.base_type, CONFIG_DEFAULTS.base_type), 1)[0]];
+    currentType = [randomChoice(asList(config.base_imagepair, CONFIG_DEFAULTS.base_imagepair), 1)[0]];
     currentStimFolder = `${stimFolder}${currentType}/`;
 
     var full_design = buildExptDesign(config);
