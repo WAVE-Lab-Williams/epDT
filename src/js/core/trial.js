@@ -4,10 +4,8 @@ PUSHING/RUNNING A CUSTOM SINGLE TRIAL (*singleTrial)
 ===============================================================
 */
 function runSingleTrial(
-    cupFullness,
-    firstCupPosition,
-    secondCupPosition,
-    handType,
+    picType,
+    effortType,
     stimDuration,
     trueTrialCounter,
     timelineTrialsToPush,
@@ -49,8 +47,7 @@ function runSingleTrial(
     };
 
     /*--------------------------- Experiment specific variables ---------------------------*/
-    var firstStim = `${currentStimFolder}cup${cupFullness}_pos${firstCupPosition}_hand${handType}`
-    var secondStim =  `${currentStimFolder}cup${cupFullness}_pos${secondCupPosition}_hand${handType}`
+    var firstStim = `${currentStimFolder}${picType}_pos${effortType}`
     var persistent_prompt = `<div style="position: fixed; top: 25px; left: 50%; transform: translateX(-50%); text-align: center;">f = same; j = different</div>`;
 
     var random_y_pos = randomIntFromRange(50, h-imgHeight); // generate a random number that will fall within the screen region (taking into account the image size)
@@ -105,49 +102,37 @@ function runSingleTrial(
         }
     };
 
-    var mask = {
-        type: jsPsychHtmlKeyboardResponse,
-        stimulus: function(){
-            w =
-                window.innerWidth ||
-                document.documentElement.clientWidth ||
-                document.body.clientWidth;
-            var x_pos = (w/2)-(imgWidth/2)
-            var display = `${persistent_prompt}<div style="position: absolute; top: ${random_y_pos}px; left: ${x_pos}px;">`+
-            `<img src="${generalFolder}mask.png" style="width:${imgWidth}px; height:${imgHeight}px" />` + 
-            `</div>`
-            return display
-        },
-        choices: "NO_KEYS",
-        trial_duration: MASK_DISP_TIME,
-        data: {
-            trial_category: 'mask' + trialType,
-        }
-    };
+    // var mask = {
+    //     type: jsPsychHtmlKeyboardResponse,
+    //     stimulus: function(){
+    //         w =
+    //             window.innerWidth ||
+    //             document.documentElement.clientWidth ||
+    //             document.body.clientWidth;
+    //         var x_pos = (w/2)-(imgWidth/2)
+    //         var display = `${persistent_prompt}<div style="position: absolute; top: ${random_y_pos}px; left: ${x_pos}px;">`+
+    //         `<img src="${generalFolder}mask.png" style="width:${imgWidth}px; height:${imgHeight}px" />` + 
+    //         `</div>`
+    //         return display
+    //     },
+    //     choices: "NO_KEYS",
+    //     trial_duration: MASK_DISP_TIME,
+    //     data: {
+    //         trial_category: 'mask' + trialType,
+    //     }
+    // };
 
     var answer = {
         type: jsPsychHtmlKeyboardResponse,
         stimulus: `${persistent_prompt}`,
-        choices: ["f","j"],
+        choices: ["f"],
         data: {
             trial_category: "answer" + trialType,
-            firstStim: firstStim,
-            secondStim: secondStim,
-            firstCupPosition: firstCupPosition,
-            secondCupPosition: secondCupPosition,
+            picType: picType,
+            effortType: effortType,
             dispImage_duration: stimDuration, // this is to see what the dispImg duration was, otherwise trial_duration would just be null for this answer trial
-            cupFullness: cupFullness,
-            handType: handType,
             y_position: random_y_pos,
-            handLocation: currentType,
             trueTrialCounter: trueTrialCounter,
-            correct_response: function(){
-                if (firstStim == secondStim){
-                    return "f"
-                } else {
-                    return "j"
-                }
-            }
         },
         on_finish: function(data){
             if (jsPsych.pluginAPI.compareKeys(data.response, data.correct_response)){
@@ -168,9 +153,6 @@ function runSingleTrial(
     timelineTrialsToPush.push(prestim);
     timelineTrialsToPush.push(fixation);
     timelineTrialsToPush.push(dispImage(firstStim));
-    timelineTrialsToPush.push(mask); // SWITCH IT BACK TO MASK ONCE YOU HAVE MASK
-    timelineTrialsToPush.push(dispImage(secondStim));
-    timelineTrialsToPush.push(mask);
     timelineTrialsToPush.push(answer);
     timelineTrialsToPush.push(cursor_on);
 

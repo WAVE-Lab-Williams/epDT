@@ -12,13 +12,13 @@ Defining Parameter Variables
 // this results in the real stimuli images being pulled from currentStimFolder, which is 
 // stimFolder + currentType
 
-var stimFolder = `src/assets/stimuli/cabinets/`
+var stimFolder = `src/assets/stimuli/cabinets/` //CHANGE!!!!!
 var currentType;
 var currentStimFolder;
 var generalFolder = 'src/assets/stimuli/other/'
 
-var runIntro = true;
-var runInstr = true;
+var runIntro = false;
+var runInstr = false;
 var runExpt = true;
 var runClose = true;
 var runPreload = true;
@@ -37,16 +37,15 @@ one of these variables (via the setup_experiment.ipynb notebook / API)
 instead of having to edit the file and do PRs.
 */
 var CONFIG_DEFAULTS = {
-    number_of_repetitions: 2,
-    base_fullness: ["Half"], // has "Full", "Half", "ExtraFull" or both
-    base_hand_style: ["Fist", "PPR", "Reach"],
-    base_type: ["typeDown", "typeSide"], // typeDown for hands positioned at the bottom of the frame, typeSide for hands positioned at the side
+    number_of_repetitions: 1,
+    base_effort_cat: ["Effortful", "None"],
+    base_imagepair: ["1", "2", "3", "4", "5"],
 };
 
 // Defining Core Variables that remain constant
 var PRESTIM_DISP_TIME = 800;
 var FIXATION_DISP_TIME = 500;
-var MASK_DISP_TIME = 300;
+//var MASK_DISP_TIME = 300;
 
 // Variables for Participant Information
 var estTotalRunTime = 5;
@@ -79,7 +78,7 @@ var h =
 // setting display image width
 var origWidth = 1920;
 var origHeight = 1080;
-var imgWidth = 800; // your desired display img width
+var imgWidth = 1000; // your desired display img width
 var imgHeight = (imgWidth / origWidth) * origHeight;
 
 
