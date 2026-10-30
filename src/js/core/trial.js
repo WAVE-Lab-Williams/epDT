@@ -6,7 +6,6 @@ PUSHING/RUNNING A CUSTOM SINGLE TRIAL (*singleTrial)
 function runSingleTrial(
     picType,
     effortType,
-    stimDuration,
     trueTrialCounter,
     timelineTrialsToPush,
     trialType,
@@ -47,10 +46,10 @@ function runSingleTrial(
     };
 
     /*--------------------------- Experiment specific variables ---------------------------*/
-    var firstStim = `${currentStimFolder}${picType}_pos${effortType}`
-    var persistent_prompt = `<div style="position: fixed; top: 25px; left: 50%; transform: translateX(-50%); text-align: center;">f = same; j = different</div>`;
+    var currentStim = `${currentStimFolder}${picType}_${effortType}`
+    var persistent_prompt = `<div style="position: fixed; top: 25px; left: 50%; transform: translateX(-50%); text-align: center;">Press the spacebar when you're ready to move to the next image.</div>`;
 
-    var random_y_pos = randomIntFromRange(50, h-imgHeight); // generate a random number that will fall within the screen region (taking into account the image size)
+    var random_y_pos = randomIntFromRange(100, h-imgHeight); // generate a random number that will fall within the screen region (taking into account the image size)
 
     function dispImage(useStim){
         var actualImage = {
@@ -65,13 +64,17 @@ function runSingleTrial(
                 `<img src="${useStim}.png" style="width:${imgWidth}px; height:${imgHeight}px" />` + 
                 `</div>`;
                 return display},
-            choices: "NO_KEYS",
-            trial_duration: stimDuration,
+            choices: " ",
+            trial_duration: MAX_IMAGE_TIME,
             prompt: `${persistent_prompt}`,
             data: {
-                trial_category: 'dispImage'+trialType,
+                trial_category: "answer" + trialType,
                 trial_stimulus: useStim,
-                trial_duration: stimDuration,
+                picType: picType,
+                effortType: effortType,
+                dispImage_duration: MAX_IMAGE_TIME, // this is to see what the dispImg duration was, otherwise trial_duration would just be null for this answer trial
+                y_position: random_y_pos,
+                trueTrialCounter: trueTrialCounter,
             }, // data end
             on_finish: function(){
                 console.log(useStim, random_y_pos)
@@ -81,26 +84,26 @@ function runSingleTrial(
     };
     
 
-    var prestim = {
-        type: jsPsychHtmlKeyboardResponse,
-        stimulus: `${persistent_prompt}`,
-        choices: "NO_KEYS",
-        trial_duration: PRESTIM_DISP_TIME,
-        data: {
-            trial_category: 'prestim_ISI' + trialType,
-        }
-    };
+    // var prestim = {
+    //     type: jsPsychHtmlKeyboardResponse,
+    //     stimulus: `${persistent_prompt}`,
+    //     choices: "NO_KEYS",
+    //     trial_duration: PRESTIM_DISP_TIME,
+    //     data: {
+    //         trial_category: 'prestim_ISI' + trialType,
+    //     }
+    // };
 
-    var fixation = {
-        type: jsPsychHtmlKeyboardResponse,
-        stimulus: `<div style="font-size:60px;">+</div>`,
-        prompt:`${persistent_prompt}`,
-        choices: "NO_KEYS",
-        trial_duration: FIXATION_DISP_TIME,
-        data: {
-            trial_category: 'fixation' + trialType,
-        }
-    };
+    // var fixation = {
+    //     type: jsPsychHtmlKeyboardResponse,
+    //     stimulus: `<div style="font-size:60px;">+</div>`,
+    //     prompt:`${persistent_prompt}`,
+    //     choices: "NO_KEYS",
+    //     trial_duration: FIXATION_DISP_TIME,
+    //     data: {
+    //         trial_category: 'fixation' + trialType,
+    //     }
+    // };
 
     // var mask = {
     //     type: jsPsychHtmlKeyboardResponse,
@@ -122,38 +125,15 @@ function runSingleTrial(
     //     }
     // };
 
-    var answer = {
-        type: jsPsychHtmlKeyboardResponse,
-        stimulus: `${persistent_prompt}`,
-        choices: ["f"],
-        data: {
-            trial_category: "answer" + trialType,
-            picType: picType,
-            effortType: effortType,
-            dispImage_duration: stimDuration, // this is to see what the dispImg duration was, otherwise trial_duration would just be null for this answer trial
-            y_position: random_y_pos,
-            trueTrialCounter: trueTrialCounter,
-        },
-        on_finish: function(data){
-            if (jsPsych.pluginAPI.compareKeys(data.response, data.correct_response)){
-                data.thisAcc = 1;
-            } else {
-                data.thisAcc = 0;
-            }
-            console.log(data.thisAcc)
-        } // on finish end
-    }
-
 
 
     /*--------------------------- push single trial sequence ---------------------------*/
 
     timelineTrialsToPush.push(if_notFull);
     timelineTrialsToPush.push(cursor_off);
-    timelineTrialsToPush.push(prestim);
-    timelineTrialsToPush.push(fixation);
-    timelineTrialsToPush.push(dispImage(firstStim));
-    timelineTrialsToPush.push(answer);
+    // timelineTrialsToPush.push(prestim);
+    // timelineTrialsToPush.push(fixation);
+    timelineTrialsToPush.push(dispImage(currentStim));
     timelineTrialsToPush.push(cursor_on);
 
 }

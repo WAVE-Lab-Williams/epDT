@@ -213,34 +213,36 @@ function buildExptDesign(config) {
     // Expt variables that are not able to change (without PR)
    // var poss_position_combos = ["CU","CD","UC","DC","CC","CC","UU","DD"]
     //var poss_position = ["C", "U", "D"];
-    var poss_disp_duration = [300];
+    // var poss_disp_duration = [300];
 
     // Expt variables that ARE able to change via config, default set in params.js.
     //      Config numbers arrive as floats, so make sure to read in correctly asInteger/asNumber
     //      see the helpers in src/js/utils/standard-functions.js.
-    var poss_pic_type = [randomChoice(asList(config.base_imagepair, CONFIG_DEFAULTS.base_imagepair), 1)]; //has "Full", "Half", "ExtraFull" or both
-    var poss_effort = [randomChoice(asList(config.base_effort_cat, CONFIG_DEFAULTS.base_effort_cat), 1)]; //reminder to remove the randomChoice() when you're not doing single block version
+    var poss_pic_type = (asList(config.base_imagepair, CONFIG_DEFAULTS.base_imagepair)); //has "Full", "Half", "ExtraFull" or both
+    var poss_effort = (asList(config.base_effort_cat, CONFIG_DEFAULTS.base_effort_cat)); //reminder to remove the randomChoice() when you're not doing single block version
     var n_reps = asInteger(config.number_of_repetitions, CONFIG_DEFAULTS.number_of_repetitions);
 
     var factors = { // each of these needs to be an array
         pic_type: poss_pic_type,
         effort: poss_effort,
-        disp_duration: poss_disp_duration
     }
 
     var full_design = jsPsych.randomization.factorial(factors, n_reps); // create combination of every possible condition, and randomly shuffles
 
     /* -------  Set Preload Images for Expt (*preload_expt) -------------- */
+    forPreload.push(`${currentStimFolder}6_None.png`)
+    forPreload.push(`${currentStimFolder}7_None.png`)
+    forPreload.push(`${currentStimFolder}8_None.png`)
+
     for (var i=0; i < poss_pic_type.length; i++) {
         for (var j=0; j < poss_effort.length; j++){ 
-            forPreload.push(`${currentStimFolder}${poss_pic_type[i]}_pos${poss_effort[j]}.png`)
+            forPreload.push(`${currentStimFolder}${poss_pic_type[i]}_${poss_effort[j]}.png`)
         }
     }
 
-    // forPreload.push(`${generalFolder}mask.png`)
-
     return full_design;
 }
+
 
 /*
 ===============================================================
@@ -252,13 +254,12 @@ var feedback_summary = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: function() {
 
-    var trials = jsPsych.data.get().filter({trial_category: 'answerexpt'});
-    var correct_trials = trials.filter({thisAcc: 1});
-    var accuracy = Math.round(correct_trials.count() / trials.count() * 100);
-    var rt = Math.round(correct_trials.select('rt').mean());
+    // var trials = jsPsych.data.get().filter({trial_category: 'answerexpt'});
+    // var correct_trials = trials.filter({thisAcc: 1});
+    // var accuracy = Math.round(correct_trials.count() / trials.count() * 100);
+    // var rt = Math.round(correct_trials.select('rt').mean());
 
-    return `<p>You responded correctly on ${accuracy}% of the trials.</p>
-        <p>Your average response time was ${rt}ms.</p>
+    return `<p>Thank you for viewing these images!</p>
         <p>Press any key to continue to the next part of the study.</p>`;
     }
 };
@@ -320,11 +321,36 @@ async function startExperiment() {
     // currentType/currentStimFolder depend on config, so they must be resolved
     // here -- before buildExptDesign() (which preloads from currentStimFolder)
     // and before any trials run (trial.js reads both as globals).
-    currentType = [randomChoice(asList(config.base_imagepair, CONFIG_DEFAULTS.base_imagepair), 1)[0]];
-    currentStimFolder = `${stimFolder}${currentType}/`;
+    // currentType = [randomChoice(asList(config.base_imagepair, CONFIG_DEFAULTS.base_imagepair), 1)[0]];
+    currentStimFolder = `${stimFolder}/`;
+    introStimFolder = `${setStimFolder}/`;
 
     var full_design = buildExptDesign(config);
-    console.log(full_design);
+    console.log(full_design)
+    
+    var random_firstthree = shuffle(["6","7","8"])
+    
+    runSingleTrial(
+        random_firstthree[0],
+        "None",
+        elem,
+        timelineexpt,
+        'expt',
+    );
+    runSingleTrial(
+        random_firstthree[1],
+        "None",
+        elem,
+        timelineexpt,
+        'expt',
+    );
+        runSingleTrial(
+        random_firstthree[2],
+        "None",
+        elem,
+        timelineexpt,
+        'expt',
+    );
 
     /* ------- timeline expt push (*pushExpt ) -------------- */
     for (var elem = 0; elem < full_design.length; elem++) {
@@ -332,7 +358,6 @@ async function startExperiment() {
         runSingleTrial(
             full_design[elem].pic_type,
             full_design[elem].effort,
-            full_design[elem].disp_duration,
             elem,
             timelineexpt,
             'expt',
@@ -363,7 +388,8 @@ async function startExperiment() {
     if (runClose) { timelinebase = timelinebase.concat(timelineclose) }
 
     jsPsych.run(timelinebase);
+
 }
 
 // Start once the page (and the WAVE client module) have loaded.
-window.addEventListener('DOMContentLoaded', startExperiment);
+window.addEventListener('DOMContentLoaded', startExperiment); 

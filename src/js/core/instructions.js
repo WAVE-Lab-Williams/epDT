@@ -67,8 +67,8 @@ var fullscreenMessage = `<p>This experiment needs to be run in “fullscreen” 
 function loadInstrContent() {
     var instrContent = [
         /* ind0 */ '<p>Hello! Thank you for participating in our study. Please take a moment to adjust your seating so that you can comfortably watch the monitor and use the keyboard. Feel free to dim the lights as well.</p><p>Close the door or do whatever is necessary to <b>minimize disturbance during the experiment</b>. Please also take a moment to silence your phone so that you are not interrupted by any messages mid-experiment. Do <i>not</i> switch to any other tabs or windows until you are complete.</p>',
-        /* ind1 */ `<p>In this quick experiment, you will see an image flash on screen. You will be able to stay on this screen to study this image for as long as you want, and when you are ready, you may press any key to see the next image. Once you have moved on, you will not be able to go back.</p>`,
-        /* ind2 */ `<p>You will be asked a series of questions about the images you saw at the end, so pay close attention!</p><p>Please do your very best to remain as focused and attentive as possible, even at the end of the experiment. I know it is very difficult to stay focused, as the experiment may seem very long, especially when you are doing the same thing over and over. But remember, it will be all over in less than ${String(estTotalRunTime)} minutes. Press the button below to begin.`,
+        /* ind1 */ `<p>In this quick experiment, you will see images one at a time. At the end, you will be asked questions about the images you saw. Whenever you are ready to move on to the next image, <i>press the spacebar</i>.</p> <p>If you don't press the spacebar within 15 seconds, you will be shown a new image. Once you have moved on, you will not be able to go back.</p>`,
+        /* ind2 */ `<p>Remember, you will be asked a series of questions about the images you saw, so please do your best to pay close attention!</p><p>It will be all over in less than ${String(estTotalRunTime)} minutes. Press the button below to begin.`,
     ];
 
     for (var i = 0; i < instrContent.length; i++) {
