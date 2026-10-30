@@ -12,13 +12,14 @@ Defining Parameter Variables
 // this results in the real stimuli images being pulled from currentStimFolder, which is 
 // stimFolder + currentType
 
-var stimFolder = `src/assets/stimuli/cabinets/` //CHANGE!!!!!
+var stimFolder = `src/assets/stimuli/fall stim/from gimp/` //CHANGE!!!!!
+var setStimFolder = 'src/assets/stimuli/fall stim/'
 var currentType;
 var currentStimFolder;
-var generalFolder = 'src/assets/stimuli/other/'
+// var generalFolder = 'src/assets/stimuli/other/'
 
-var runIntro = false;
-var runInstr = false;
+var runIntro = true;
+var runInstr = true;
 var runExpt = true;
 var runClose = true;
 var runPreload = true;
@@ -38,20 +39,21 @@ instead of having to edit the file and do PRs.
 */
 var CONFIG_DEFAULTS = {
     number_of_repetitions: 1,
-    base_effort_cat: ["Effortful", "None"],
+    base_effort_cat: ["Effort", "None"],
     base_imagepair: ["1", "2", "3", "4", "5"],
 };
 
-// Defining Core Variables that remain constant
-var PRESTIM_DISP_TIME = 800;
-var FIXATION_DISP_TIME = 500;
+// // Defining Core Variables that remain constant
+// var PRESTIM_DISP_TIME = 800;
+var MAX_IMAGE_TIME = 15000;
+// var FIXATION_DISP_TIME = 500;
 //var MASK_DISP_TIME = 300;
 
 // Variables for Participant Information
-var estTotalRunTime = 5;
+var estTotalRunTime = 4;
 var estDollars = 0.90;
 var participantType = 'prolific';
-var completionCode = 'CFR2PRXS';
+var completionCode = 'CFR2PRXS'; //CHANGE!!!!!!!!!
 var prolific_url = 'https://app.prolific.co/submissions/complete?cc='+completionCode;
 
 // WAVE Backend Configuration
@@ -76,9 +78,9 @@ var h =
     document.body.clientHeight;
 
 // setting display image width
-var origWidth = 1920;
-var origHeight = 1080;
-var imgWidth = 1000; // your desired display img width
+var origWidth = 3000; 
+var origHeight = 3000; 
+var imgWidth = 750; // your desired display img width
 var imgHeight = (imgWidth / origWidth) * origHeight;
 
 
