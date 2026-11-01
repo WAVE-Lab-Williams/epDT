@@ -49,7 +49,8 @@ function runSingleTrial(
     var currentStim = `${currentStimFolder}${picType}_${effortType}`
     var persistent_prompt = `<div style="position: fixed; top: 25px; left: 50%; transform: translateX(-50%); text-align: center;">Press the spacebar when you're ready to move to the next image.</div>`;
 
-    var random_y_pos = randomIntFromRange(100, h-imgHeight); // generate a random number that will fall within the screen region (taking into account the image size)
+    // var random_y_pos = randomIntFromRange(100, h-imgHeight); // generate a random number that will fall within the screen region (taking into account the image size)
+    var random_y_pos = 70 // enable this when you do NOT want random y positioning, its always going to be 70 px from the top
 
     function dispImage(useStim){
         var actualImage = {

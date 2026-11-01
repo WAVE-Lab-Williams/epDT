@@ -228,6 +228,8 @@ function buildExptDesign(config) {
     }
 
     var full_design = jsPsych.randomization.factorial(factors, n_reps); // create combination of every possible condition, and randomly shuffles
+    full_design = shuffleNoAdjacentRepeats(full_design, 'pic_type'); // no two trials in a row show the same pic_type
+    console.log(full_design)
 
     /* -------  Set Preload Images for Expt (*preload_expt) -------------- */
     forPreload.push(`${currentStimFolder}6_None.png`)

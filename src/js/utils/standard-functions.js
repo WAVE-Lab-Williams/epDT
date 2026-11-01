@@ -29,6 +29,28 @@ function shuffle(array) {
   }
   return array;
 }
+
+// Returns a shuffled copy of an array of objects where no two neighbors share the same value for `key`.
+// Gives up after maxAttempts so an impossible design (e.g. only one pic_type) can't freeze the page.
+function shuffleNoAdjacentRepeats(array, key, maxAttempts = 100000) {
+    var shuffled = array.slice();
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+        shuffle(shuffled);
+        var hasRepeat = false;
+        for (var i = 1; i < shuffled.length; i++) {
+            if (shuffled[i][key] === shuffled[i - 1][key]) {
+                hasRepeat = true;
+                break;
+            }
+        }
+        if (!hasRepeat) {
+            return shuffled;
+        }
+    }
+    console.warn(`⚠️ No order without adjacent repeats of "${key}" found after ${maxAttempts} shuffles - using the last shuffle, which has repeats.`);
+    return shuffled;
+}
+
 function randomIndex(arrayLength){
     var randIndex = Math.floor(Math.random() * arrayLength);
     return randIndex
